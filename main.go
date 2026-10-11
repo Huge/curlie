@@ -74,7 +74,7 @@ func main() {
 	if opts.Has("h") || opts.Has("help") {
 		stdout = &formatter.HelpAdapter{Out: stdout, CmdName: os.Args[0]}
 	} else {
-		isForm := opts.Has("F")
+		isForm := opts.Has("F") || opts.Has("form-string")
 		if pretty || term.IsTerminal(stdoutFd) {
 			inputWriter = &formatter.JSON{
 				Out:    inputWriter,

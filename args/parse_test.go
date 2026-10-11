@@ -19,6 +19,11 @@ func TestParseHead(t *testing.T) {
 	parseAndCompare(t, []string{"curlie", "head", "example.com"}, expected)
 }
 
+func TestParseForm(t *testing.T) {
+	expected := []string{"-X", "POST", "--form-string", "name=value", "--form-string", "user=@alice", "--form-string", "note=<item>", "example.com"}
+	parseAndCompare(t, []string{"curlie", "--form", "post", "example.com", "name=value", "user=@alice", "note=<item>"}, expected)
+}
+
 func parseAndCompare(t *testing.T, args, expected []string) {
 	opts := Parse(args)
 	if !compareStrings(opts, expected) {

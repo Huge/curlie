@@ -51,7 +51,7 @@ func parseFancyArgs(args []string, postMode PostMode) (opts Opts) {
 			url = appendURLParam(url, name, value)
 		case fieldArg:
 			if postMode == PostModeFORM {
-				opts = append(opts, "-F", name+"="+value)
+				opts = append(opts, "--form-string", name+"="+value)
 			} else {
 				data[name] = value
 			}

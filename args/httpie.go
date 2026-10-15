@@ -15,6 +15,7 @@ const (
 	paramArg
 	fieldArg
 	jsonArg
+	fileArg
 )
 
 type PostMode int
@@ -24,7 +25,7 @@ const (
 	PostModeFORM
 )
 
-func parseFancyArgs(args []string, postMode PostMode) (opts Opts) {
+func parseFancyArgs(args []string, postMode PostMode) (opts Opts, err error) {
 	if len(args) == 0 {
 		return
 	}
@@ -42,6 +43,7 @@ func parseFancyArgs(args []string, postMode PostMode) (opts Opts) {
 	}
 	url := args[0]
 	data := map[string]interface{}{}
+	var files []string
 	for _, arg := range args[1:] {
 		typ, name, value := parseArg(arg)
 		switch typ {
@@ -55,6 +57,13 @@ func parseFancyArgs(args []string, postMode PostMode) (opts Opts) {
 			} else {
 				data[name] = value
 			}
+		case fileArg:
+			if postMode == PostModeFORM {
+				// HTTPie file upload field: name@path[;type=mime]
+				opts = append(opts, "-F", name+"=@"+value)
+			} else {
+				files = append(files, name)
+			}
 		case jsonArg:
 			var v interface{}
 			json.Unmarshal([]byte(value), &v)
@@ -62,6 +71,9 @@ func parseFancyArgs(args []string, postMode PostMode) (opts Opts) {
 		default:
 			opts = append(opts, arg)
 		}
+	}
+	if len(files) > 0 {
+		return nil, fmt.Errorf("invalid file fields (perhaps you meant --form?): %s", strings.Join(files, ","))
 	}
 	if len(data) > 0 {
 		j, _ := json.Marshal(data)
@@ -116,6 +128,10 @@ func parseArg(arg string) (typ argType, name, value string) {
 				return paramArg, arg[:i], arg[i+2:]
 			}
 			return fieldArg, arg[:i], arg[i+1:]
+		case '@':
+			if i > 0 {
+				return fileArg, arg[:i], arg[i+1:]
+			}
 		}
 	}
 	return

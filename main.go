@@ -44,7 +44,11 @@ func main() {
 	var stdin io.Reader = os.Stdin
 	input := &bytes.Buffer{}
 	var inputWriter io.Writer = input
-	opts := args.Parse(os.Args)
+	opts, err := args.Parse(os.Args)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "curlie: %v\n", err)
+		os.Exit(2)
+	}
 
 	verbose := opts.Has("verbose") || opts.Has("v")
 	quiet := opts.Has("silent") || opts.Has("s")
